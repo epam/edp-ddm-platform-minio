@@ -27,21 +27,21 @@ data "aws_ami" "ubuntu" {
 data "aws_vpc" "vpc" {
   filter {
     name   = "tag:Name"
-    values = ["vault-kms-unseal-${var.cluster_name}*"]
+    values = ["platform-${var.cluster_name}"]
   }
 }
 
 data "aws_internet_gateway" "gw" {
   filter {
     name   = "tag:Name"
-    values = ["vault-kms-unseal-${var.cluster_name}*"]
+    values = ["platform-${var.cluster_name}"]
   }
 }
 
 data "aws_subnet" "public_subnet" {
   filter {
     name   = "tag:Name"
-    values = ["vault-kms-unseal-${var.cluster_name}*"]
+    values = ["platform-${var.cluster_name}"]
   }
 }
 
@@ -49,6 +49,12 @@ data "aws_subnet" "public_subnet" {
 data "aws_route53_zone" "root_zone" {
   name         = var.baseDomain
   private_zone = false
+}
+
+resource "random_password" "password" {
+  length           = 16
+  special          = true
+  override_special = "_%@"
 }
 
 
