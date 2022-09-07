@@ -19,9 +19,7 @@ resource "aws_instance" "minio" {
 
   ebs_optimized = false
 
-  tags = {
-    Name = "minio-${var.cluster_name}"
-  }
+  tags = local.tags
 
   user_data = data.template_file.minio.rendered
 
@@ -31,9 +29,7 @@ resource "aws_ebs_volume" "minio_ebs" {
   availability_zone = var.aws_zone
   size              = 300
 
-  tags = {
-    Name = "minio-${var.cluster_name}"
-  }
+  tags = local.tags
 }
 
 resource "aws_volume_attachment" "minio_ebs" {
@@ -48,9 +44,7 @@ resource "aws_security_group" "custom" {
   description = "Custom minio access"
   vpc_id      = data.aws_vpc.vpc.id
 
-  tags = {
-    Name = "minio-${var.cluster_name}-custom"
-  }
+  tags = local.tags
 
   # SSH
   ingress {
@@ -95,9 +89,7 @@ resource "aws_security_group" "minio" {
   description = "minio access"
   vpc_id      = data.aws_vpc.vpc.id
 
-  tags = {
-    Name = "minio-${var.cluster_name}"
-  }
+  tags = local.tags
 
   ingress {
     from_port   = 443
