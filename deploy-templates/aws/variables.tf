@@ -66,8 +66,3 @@ variable "baseDomain" {
   type        = string
   default     = "mdtu-ddm.projects.epam.com"
 }
-
-variable "tags" {
-  type        = map(any)
-  description = "A map of tags to add to all resources."
-}

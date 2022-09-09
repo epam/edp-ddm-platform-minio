@@ -1,6 +1,5 @@
 resource "aws_eip" "minio_ip" {
-  vpc  = true
-  tags = local.tags
+  vpc = true
 }
 
 resource "aws_eip_association" "minio_public" {
