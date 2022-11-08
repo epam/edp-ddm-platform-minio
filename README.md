@@ -75,3 +75,8 @@ No modules.
 | <a name="output_minio_password"></a> [minio\_password](#output\_minio\_password) | n/a |
 | <a name="output_minio_username"></a> [minio\_username](#output\_minio\_username) | n/a |
 <!-- END_TF_DOCS -->
+
+### License
+
+The platform-minio is Open Source software released under
+the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0).
