@@ -58,6 +58,8 @@ No modules.
 | <a name="input_baseDomain"></a> [baseDomain](#input\_baseDomain) | baseDomain | `string` | `"mdtu-ddm.projects.epam.com"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Cluster name | `string` | `"main"` | no |
 | <a name="input_custom_ingress_rules_cidrs"></a> [custom\_ingress\_rules\_cidrs](#input\_custom\_ingress\_rules\_cidrs) | List of CIDRs for ingress rules. \|<br>**Optional** \|<pre>["85.223.209.0/24"]</pre> | `list(any)` | <pre>[<br>  "85.223.209.0/24"<br>]</pre> | no |
+| <a name="input_minio_ebs_volume_size"></a> [minio\_ebs\_volume\_size](#input\_minio\_ebs\_volume\_size) | Default data volumes size for storage | `string` | `300` | no |
+| <a name="input_minio_ec2_instance_type"></a> [minio\_ec2\_instance\_type](#input\_minio\_ec2\_instance\_type) | Default instance size for minio instance | `string` | `"t2.micro"` | no |
 | <a name="input_minio_root_user"></a> [minio\_root\_user](#input\_minio\_root\_user) | n/a | `string` | `"minio"` | no |
 | <a name="input_minio_url"></a> [minio\_url](#input\_minio\_url) | n/a | `string` | `"https://dl.min.io/server/minio/release/linux-amd64/minio"` | no |
 | <a name="input_minio_volume_path"></a> [minio\_volume\_path](#input\_minio\_volume\_path) | n/a | `string` | `"/dev/xvdh"` | no |
