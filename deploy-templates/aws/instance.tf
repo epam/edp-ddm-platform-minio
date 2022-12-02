@@ -1,7 +1,7 @@
 resource "aws_instance" "minio" {
 
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
+  instance_type = var.minio_ec2_instance_type
   subnet_id     = data.aws_subnet.public_subnet.id
   key_name      = aws_key_pair.main.key_name
   monitoring    = "false"
@@ -23,7 +23,7 @@ resource "aws_instance" "minio" {
 
 resource "aws_ebs_volume" "minio_ebs" {
   availability_zone = var.aws_zone
-  size              = 300
+  size              = var.minio_ebs_volume_size
 
   tags = merge(local.tags, {
     "Name" = "platform-minio-volume-${var.cluster_name}"

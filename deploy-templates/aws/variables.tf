@@ -24,7 +24,16 @@ variable "minio_volume_path" {
   type    = string
   default = "/dev/xvdh"
 }
-
+variable "minio_ec2_instance_type" {
+  type        = string
+  description = "Default instance size for minio instance"
+  default     = "t2.micro"
+}
+variable "minio_ebs_volume_size" {
+  type        = string
+  description = "Default data volumes size for storage"
+  default     = 300
+}
 variable "cluster_name" {
   type        = string
   description = "Cluster name"
