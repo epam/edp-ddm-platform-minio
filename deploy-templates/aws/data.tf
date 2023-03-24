@@ -45,12 +45,6 @@ data "aws_subnet" "public_subnet" {
   }
 }
 
-
-data "aws_route53_zone" "root_zone" {
-  name         = var.baseDomain
-  private_zone = false
-}
-
 resource "random_password" "password" {
   length           = 16
   special          = true
@@ -62,7 +56,6 @@ data "template_file" "minio" {
   template = file("./scripts/userdata.tpl")
 
   vars = {
-    minio_domain        = "platform-minio-${var.cluster_name}.${data.aws_route53_zone.root_zone.name}"
     minio_root_password = random_password.password.result
     minio_root_user     = var.minio_root_user
     minio_url           = var.minio_url
