@@ -12,6 +12,6 @@ output "minio_password" {
   value     = random_password.password.result
 }
 
-output "minio_endpoint" {
-  value = "https://${aws_route53_record.minio.name}"
+output "minio_elastic_ip" {
+  value = aws_eip.minio_ip.public_ip
 }

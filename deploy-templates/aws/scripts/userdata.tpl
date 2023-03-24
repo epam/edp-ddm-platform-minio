@@ -1,3 +1,22 @@
+Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="cloud-config.txt"
+
+#cloud-config
+cloud_final_modules:
+- [scripts-user, always]
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="userdata.txt"
+
 #!/usr/bin/env bash
 
 
@@ -7,7 +26,7 @@ HOME="/home/minio"
 # Detect package management system.
 APT_GET=$(which apt-get 2>/dev/null)
 
-apt update && apt install -y unzip libtool libltdl-dev sharutils curl software-properties-common certbot
+apt update && apt install -y unzip libtool libltdl-dev sharutils curl software-properties-common
 
 user_ubuntu() {
 # UBUNTU user setup
@@ -56,18 +75,6 @@ echo "${minio_volume_path} /usr/local/share/minio xfs defaults 0 0" >> /etc/fsta
 mount /usr/local/share/minio
 chown minio:minio -R /usr/local/share/minio
 
-if [ ! -f "/usr/local/share/minio/certificates/${minio_domain}/public.crt" ] && [ ! -f "/usr/local/share/minio/certificates/${minio_domain}/private.key" ] ; then
-  certbot certonly --standalone -d "${minio_domain}" --register-unsafely-without-email --agree-tos
-  sleep 30
-  chmod -R 755 /etc/letsencrypt/live/ && chmod -R 755 /etc/letsencrypt/archive/
-  mkdir -p /usr/local/share/minio/certificates/${minio_domain}
-  cp /etc/letsencrypt/live/"${minio_domain}"/fullchain.pem /usr/local/share/minio/certificates/${minio_domain}/public.crt
-  cp /etc/letsencrypt/live/"${minio_domain}"/privkey.pem /usr/local/share/minio/certificates/${minio_domain}/private.key
-  chown minio:minio /usr/local/share/minio/certificates/${minio_domain}/public.crt
-  chown minio:minio /usr/local/share/minio/certificates/${minio_domain}/private.key
-fi
-
-
 mkdir /etc/minio
 chown minio:minio /etc/minio
 
@@ -75,9 +82,8 @@ chown minio:minio /etc/minio
 cat << EOF > /etc/default/minio
 MINIO_ROOT_USER=${minio_root_user}
 MINIO_VOLUMES="/usr/local/share/minio/storage"
-MINIO_OPTS="-C /etc/minio --address :443 --console-address :9001 -S /usr/local/share/minio/certificates/${minio_domain}"
+MINIO_OPTS="-C /etc/minio --address :9000 --console-address :9001"
 MINIO_ROOT_PASSWORD="${minio_root_password}"
-MINIO_SERVER_URL=https://${minio_domain}
 EOF
 
 chown minio:minio /etc/default/minio
@@ -120,10 +126,10 @@ EOF
 
 systemctl daemon-reload
 systemctl enable minio
-systemctl start minio
+systemctl restart minio
 
 curl --silent --output /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
 chmod 0755 /usr/local/bin/mc
 
-mc config host add platform-minio https://${minio_domain} minio ${minio_root_password}
+mc config host add platform-minio http://127.0.0.1:9000 minio ${minio_root_password}
 mc mb platform-minio/${bucket_name}

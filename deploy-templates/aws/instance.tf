@@ -147,7 +147,7 @@ resource "null_resource" "minio_init" {
     command     = var.wait_for_cluster_cmd
     interpreter = var.wait_for_cluster_interpreter
     environment = {
-      ENDPOINT = "https://${aws_route53_record.minio.name}:9001"
+      ENDPOINT = "http://${aws_eip.minio_ip.public_ip}:9001"
     }
   }
   depends_on = [aws_instance.minio]
