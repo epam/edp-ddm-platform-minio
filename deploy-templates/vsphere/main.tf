@@ -1,111 +1,105 @@
-provider "vsphere" {
-  vsphere_server = var.vsphere_server
-  user           = var.vsphere_user
-  password       = var.vsphere_password
-
-  allow_unverified_ssl = true
-}
-
-data "vsphere_datacenter" "dc" {
-  name = var.vsphere_datacenter
-}
-
-data "vsphere_datastore" "datastore" {
-  name          = var.vsphere_datastore
-  datacenter_id = "${data.vsphere_datacenter.dc.id}"
-}
-
-data "vsphere_compute_cluster" "cluster" {
-  name          = var.vsphere_cluster
-  datacenter_id = "${data.vsphere_datacenter.dc.id}"
-}
-
-data "vsphere_network" "network" {
-  name          = var.vsphere_network
-  datacenter_id = "${data.vsphere_datacenter.dc.id}"
-}
-
-data "vsphere_virtual_machine" "template" {
-  name          = "template-minio"
-  datacenter_id = "${data.vsphere_datacenter.dc.id}"
-}
-
-data "vsphere_resource_pool" "pool" {
-  name          = "${var.vsphere_cluster}/Resources/${var.vsphere_resource_pool}"
-  datacenter_id = "${data.vsphere_datacenter.dc.id}"
+resource "vsphere_virtual_disk" "virtual_disk" {
+  size               = var.vsphere_minio_volume_size
+  type               = "thin"
+  vmdk_path          = "${var.vsphere_folder}-platform-minio/${var.cluster_name}-platform-minio-volume.vmdk"
+  create_directories = true
+  datacenter         = data.vsphere_datacenter.dc.name
+  datastore          = data.vsphere_datastore.datastore.name
 }
 
 resource "vsphere_virtual_machine" "vm" {
-  name             = "platform-minio-${var.cluster_name}"
-  resource_pool_id = "${data.vsphere_resource_pool.pool.id}"
-  datastore_id     = "${data.vsphere_datastore.datastore.id}"
-  folder           = "${var.vsphere_datacenter}/vm/${var.vsphere_folder}"
-
-  num_cpus                   = 2
-  memory                     = 2048
-  guest_id                   = "${data.vsphere_virtual_machine.template.guest_id}"
+  name                       = "${var.cluster_name}-platform-minio"
+  resource_pool_id           = data.vsphere_resource_pool.pool.id
+  datastore_id               = data.vsphere_datastore.datastore.id
+  folder                     = "${var.vsphere_datacenter}/vm/${var.vsphere_folder}"
+  num_cpus                   = 4
+  memory                     = 8192
+  guest_id                   = data.vsphere_virtual_machine.template.guest_id
   wait_for_guest_net_timeout = -1
-
-  scsi_type = "${data.vsphere_virtual_machine.template.scsi_type}"
+  scsi_type                  = data.vsphere_virtual_machine.template.scsi_type
 
   network_interface {
     network_id = data.vsphere_network.network.id
   }
+
   disk {
+    unit_number      = 0
     label            = "disk0"
-    size             = "${data.vsphere_virtual_machine.template.disks.0.size}"
-    eagerly_scrub    = "${data.vsphere_virtual_machine.template.disks.0.eagerly_scrub}"
-    thin_provisioned = "${data.vsphere_virtual_machine.template.disks.0.thin_provisioned}"
+    size             = var.vsphere_minio_volume_os_size
+    thin_provisioned = true
   }
 
   disk {
-    label            = "disk1"
-    size             = "200"
-    eagerly_scrub    = "${data.vsphere_virtual_machine.template.disks.0.eagerly_scrub}"
-    thin_provisioned = "${data.vsphere_virtual_machine.template.disks.0.thin_provisioned}"
-    unit_number      = 1
-    keep_on_remove   = true
+    attach       = true
+    unit_number  = 1
+    label        = "disk1"
+    path         = vsphere_virtual_disk.virtual_disk.vmdk_path
+    datastore_id = data.vsphere_datastore.datastore.id
   }
 
   clone {
-    template_uuid = "${data.vsphere_virtual_machine.template.id}"
+    template_uuid = data.vsphere_virtual_machine.template.id
 
     customize {
       linux_options {
-        host_name = "platform-minio-${var.cluster_name}"
+        host_name = "${var.cluster_name}-platform-minio"
         domain    = var.baseDomain
       }
+
       network_interface {
         ipv4_address = var.vsphere_minio_instance_ip
         ipv4_netmask = 24
       }
 
-      ipv4_gateway = "${var.vsphere_network_gateway}"
+      ipv4_gateway = var.vsphere_network_gateway
     }
-  }
-
-  lifecycle {
-    ignore_changes = [
-      change_version,
-      imported,
-      storage_policy_id,
-    ]
   }
 }
 
+resource "null_resource" "minio_userdata" {
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "mdtuddm"
+    private_key = "${file("./packer/private.key")}"
+    host        = var.vsphere_minio_instance_ip
+  }
+
+  provisioner "file" {
+    source      = "./scripts/userdata.sh"
+    destination = "/tmp/userdata.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "export minio_root_password=${random_password.password.result}",
+      "export minio_root_user=${var.minio_root_user}",
+      "export minio_url=${var.minio_url}",
+      "export minio_volume_path=${var.minio_volume_path}",
+      "export minio_local_mount_path=${var.minio_local_mount_path}",
+      "export bucket_name=${var.backup_bucket_name}",
+      "chmod +x /tmp/userdata.sh",
+      "sudo -E /tmp/userdata.sh"
+    ]
+  }
+
+  depends_on = [vsphere_virtual_machine.vm]
+}
+
 resource "null_resource" "minio_init" {
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
   provisioner "local-exec" {
     command     = var.wait_for_cluster_cmd
     interpreter = var.wait_for_cluster_interpreter
     environment = {
-      ENDPOINT = "http://${var.vsphere_minio_instance_ip}:9000/minio/health/live"
+      ENDPOINT = "http://${var.vsphere_minio_instance_ip}:9001"
     }
   }
-  depends_on = [vsphere_virtual_machine.vm]
-}
-
-module "files" {
-  source  = "github.com/matti/terraform-shell-outputs.git"
-  command = "sleep 30 && ssh -o \"StrictHostKeyChecking no\" minio@${var.vsphere_minio_instance_ip} -i packer/private.key cat /etc/default/minio | grep MINIO_ROOT_PASSWORD|awk -F = {'print $2'}|cut -d '\"' -f 2"
-  depends_on = [null_resource.minio_init]
+  depends_on = [null_resource.minio_userdata]
 }

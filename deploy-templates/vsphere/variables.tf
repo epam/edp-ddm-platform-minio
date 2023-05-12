@@ -36,17 +36,17 @@ variable "vsphere_network" {
 
 variable "vsphere_folder" {
   description = "Vsphere folder"
-  type = string
+  type        = string
 }
 
 variable "vsphere_network_gateway" {
   description = "Vsphere network gateway IP"
-  type = string
+  type        = string
 }
 
 variable "vsphere_resource_pool" {
   description = "Vsphere resource pool"
-  type = string
+  type        = string
 }
 
 variable "cluster_name" {
@@ -62,7 +62,29 @@ variable "baseDomain" {
 
 variable "vsphere_minio_instance_ip" {
   description = "minio Instance IP address"
-  type = string
+  type        = string
+}
+
+variable "vsphere_minio_volume_os_size" {
+  description = "minimum size of the OS disk [GiB]"
+  type        = number
+  default     = 32
+  validation {
+    condition     = var.vsphere_minio_volume_os_size >= 32
+    error_message = "Must be 16 or more."
+  }
+}
+
+variable "vsphere_minio_volume_size" {
+  type        = string
+  description = "Default data volumes size for storage"
+  default     = 300
+}
+
+variable "vsphere_minio_template_name" {
+  description = "minio template name"
+  type        = string
+  default     = "minio-ubuntu-template"
 }
 
 variable "wait_for_cluster_cmd" {
@@ -75,4 +97,30 @@ variable "wait_for_cluster_interpreter" {
   description = "Custom local-exec command line interpreter for the command to determining if the eks cluster is healthy."
   type        = list(string)
   default     = ["/bin/sh", "-c"]
+}
+
+variable "minio_url" {
+  type    = string
+  default = "https://dl.min.io/server/minio/release/linux-amd64/minio"
+}
+
+variable "minio_root_user" {
+  type    = string
+  default = "minio"
+}
+
+variable "minio_volume_path" {
+  type    = string
+  default = "/dev/sdb"
+}
+
+variable "minio_local_mount_path" {
+  type    = string
+  default = "/usr/local/share/minio"
+}
+
+variable "backup_bucket_name" {
+  type        = string
+  description = "Bucket name for storing backups"
+  default     = "mdtuddm"
 }
