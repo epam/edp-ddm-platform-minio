@@ -1,3 +1,9 @@
+output "minio_root_user" {
+  sensitive = true
+  value     = var.minio_root_user
+}
+
 output "minio_root_password" {
-  value = module.files.stdout
+  sensitive = true
+  value     = random_password.password.result
 }
