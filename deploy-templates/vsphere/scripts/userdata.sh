@@ -32,6 +32,19 @@ user_ubuntu() {
   fi
 }
 
+# disable password authorization when connecting to the Minio VM
+restrict_access() {
+  SSHD_CONFIG_PATH="/etc/ssh/sshd_config"
+
+  logger "Modifying the file ${SSHD_CONFIG_PATH}"
+  sed -i 's/^#*UsePAM.*$/UsePAM no/' ${SSHD_CONFIG_PATH}
+  sed -i 's/^#*PermitRootLogin.*$/PermitRootLogin no/' ${SSHD_CONFIG_PATH}
+  sed -i 's/^#*PasswordAuthentication.*$/PasswordAuthentication no/' ${SSHD_CONFIG_PATH}
+  sed -i 's/^#*ChallengeResponseAuthentication.*$/ChallengeResponseAuthentication no/' ${SSHD_CONFIG_PATH}
+  logger "A file ${SSHD_CONFIG_PATH} modification is complete. Reloading the ssh service"
+  systemctl reload ssh
+}
+
 if [[ ! -z ${APT_GET} ]]; then
   logger "Setting up user ${USER} for Debian/Ubuntu"
   user_ubuntu
@@ -151,3 +164,5 @@ chmod 0755 /usr/local/bin/mc
 
 mc config host add platform-minio http://127.0.0.1:9000 ${minio_root_user} ${minio_root_password}
 mc mb --ignore-existing platform-minio/${bucket_name}
+
+restrict_access
