@@ -75,8 +75,14 @@ fi
 if mount | grep ${minio_volume_path} ; then
   logger "Mounting point ${minio_volume_path} is already mounted"
 else
-  logger "Mounting ${vault_local_mount_path}"
+  logger "Mounting ${minio_local_mount_path}"
   mount ${minio_local_mount_path} || logger "Mounting volume ${minio_volume_path} to point ${minio_local_mount_path} has been failed"
+fi
+
+if [[ $(ls -ld ${minio_local_mount_path} | awk '{print $3}') == ${USER} ]] ; then
+  logger "Chown operation is not needed"
+else
+  logger "Chown ${minio_local_mount_path}"
   chown ${USER}:${GROUP} -R ${minio_local_mount_path}
 fi
 
