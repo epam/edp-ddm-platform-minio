@@ -40,18 +40,6 @@ variable "cluster_name" {
   default     = "main"
 }
 
-variable "custom_ingress_rules_cidrs" {
-  description = <<EOD
-List of CIDRs for ingress rules. |
-**Optional** |
-```
-["85.223.209.0/24"]
-```
-EOD
-  type        = list(any)
-  default     = ["85.223.209.0/24"]
-}
-
 variable "backup_bucket_name" {
   type        = string
   description = "Bucket name for storing backups"

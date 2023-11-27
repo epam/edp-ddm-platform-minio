@@ -10,12 +10,12 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.25.0 |
-| <a name="provider_http"></a> [http](#provider\_http) | 3.0.1 |
-| <a name="provider_null"></a> [null](#provider\_null) | 3.1.1 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.3.2 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.54.0 |
+| <a name="provider_http"></a> [http](#provider\_http) | 3.2.1 |
+| <a name="provider_null"></a> [null](#provider\_null) | 3.2.1 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.4.3 |
 | <a name="provider_template"></a> [template](#provider\_template) | 2.2.0 |
-| <a name="provider_tls"></a> [tls](#provider\_tls) | 4.0.1 |
+| <a name="provider_tls"></a> [tls](#provider\_tls) | 4.0.4 |
 
 ## Modules
 
@@ -30,7 +30,6 @@ No modules.
 | [aws_eip_association.minio_public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip_association) | resource |
 | [aws_instance.minio](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [aws_key_pair.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair) | resource |
-| [aws_security_group.custom](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group.minio](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_volume_attachment.minio_ebs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [null_resource.main](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
@@ -55,7 +54,6 @@ No modules.
 | <a name="input_backup_bucket_name"></a> [backup\_bucket\_name](#input\_backup\_bucket\_name) | Bucket name for storing backups | `string` | `"backup-bucket"` | no |
 | <a name="input_baseDomain"></a> [baseDomain](#input\_baseDomain) | baseDomain | `string` | `"mdtu-ddm.projects.epam.com"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Cluster name | `string` | `"main"` | no |
-| <a name="input_custom_ingress_rules_cidrs"></a> [custom\_ingress\_rules\_cidrs](#input\_custom\_ingress\_rules\_cidrs) | List of CIDRs for ingress rules. \|<br>**Optional** \|<pre>["85.223.209.0/24"]</pre> | `list(any)` | <pre>[<br>  "85.223.209.0/24"<br>]</pre> | no |
 | <a name="input_minio_ebs_volume_size"></a> [minio\_ebs\_volume\_size](#input\_minio\_ebs\_volume\_size) | Default data volumes size for storage | `string` | `300` | no |
 | <a name="input_minio_ec2_instance_type"></a> [minio\_ec2\_instance\_type](#input\_minio\_ec2\_instance\_type) | Default instance size for minio instance | `string` | `"t2.micro"` | no |
 | <a name="input_minio_root_user"></a> [minio\_root\_user](#input\_minio\_root\_user) | n/a | `string` | `"minio"` | no |
@@ -71,6 +69,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_minio_cred"></a> [minio\_cred](#output\_minio\_cred) | n/a |
+| <a name="output_minio_elastic_ip"></a> [minio\_elastic\_ip](#output\_minio\_elastic\_ip) | n/a |
 | <a name="output_minio_password"></a> [minio\_password](#output\_minio\_password) | n/a |
 | <a name="output_minio_username"></a> [minio\_username](#output\_minio\_username) | n/a |
 <!-- END_TF_DOCS -->

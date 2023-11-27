@@ -8,7 +8,6 @@ resource "aws_instance" "minio" {
 
   vpc_security_group_ids = [
     aws_security_group.minio.id,
-    aws_security_group.custom.id,
   ]
 
   ebs_optimized = false
@@ -37,53 +36,6 @@ resource "aws_volume_attachment" "minio_ebs" {
   stop_instance_before_detaching = true
 }
 
-resource "aws_security_group" "custom" {
-  name        = "minio-${var.cluster_name}-custom"
-  description = "Custom minio access"
-  vpc_id      = data.aws_vpc.vpc.id
-
-  tags = merge(local.tags, {
-    "Name" = "platform-minio-${var.cluster_name}-custom-sg"
-  })
-
-  # SSH
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = var.custom_ingress_rules_cidrs
-  }
-
-  # Minio Client Traffic
-  ingress {
-    from_port   = 9000
-    to_port     = 9000
-    protocol    = "tcp"
-    cidr_blocks = var.custom_ingress_rules_cidrs
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = var.custom_ingress_rules_cidrs
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = var.custom_ingress_rules_cidrs
-  }
-
-  ingress {
-    from_port   = 9001
-    to_port     = 9001
-    protocol    = "tcp"
-    cidr_blocks = var.custom_ingress_rules_cidrs
-  }
-}
-
 resource "aws_security_group" "minio" {
   name        = "minio-${var.cluster_name}"
   description = "minio access"
@@ -94,20 +46,8 @@ resource "aws_security_group" "minio" {
   })
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["${data.aws_nat_gateway.cluster_ip.public_ip}/32"]
-  }
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["${aws_eip.minio_ip.public_ip}/32"]
-  }
-  ingress {
-    from_port   = 443
-    to_port     = 443
+    from_port   = 9001
+    to_port     = 9001
     protocol    = "tcp"
     cidr_blocks = ["${chomp(data.http.external_ip.body)}/32"]
   }
@@ -116,14 +56,14 @@ resource "aws_security_group" "minio" {
     from_port   = 9001
     to_port     = 9001
     protocol    = "tcp"
-    cidr_blocks = ["${chomp(data.http.external_ip.body)}/32"]
+    cidr_blocks = ["${data.aws_nat_gateway.cluster_ip.public_ip}/32"]
   }
 
   ingress {
-    from_port   = 22
-    to_port     = 22
+    from_port   = 9000
+    to_port     = 9000
     protocol    = "tcp"
-    cidr_blocks = ["${chomp(data.http.external_ip.body)}/32"]
+    cidr_blocks = ["${data.aws_nat_gateway.cluster_ip.public_ip}/32"]
   }
 
   ingress {
